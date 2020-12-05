@@ -21,22 +21,21 @@ function calculatePart1(input: string[][], rule: {x: number, y: number} = {x: 3,
   return result;
 }
 
-function calculatePart2(input: string[][]) {
+function calculatePart2(input: string[][]): number {
   const rules = [
     {x: 1, y: 1},
     {x: 3, y: 1},
     {x: 5, y: 1},
     {x: 7, y: 1},
     {x: 1, y: 2}
-    ]
+  ]
 
-  const results = rules.map(rule => calculatePart1(input, rule));
-  return results.reduce((res, val) => res * val);
+  return rules.map(rule => calculatePart1(input, rule))
+    .reduce((res, val) => res * val);
 }
 
 
 function parse(input: string): string[][] {
-  const regexp = /^(\d+)-(\d+) (.): (.*)$/;
   return input.split('\n')
     .map(row => row.split(''))
 }
