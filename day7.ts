@@ -3,7 +3,8 @@ import {getInput, getTestFunction} from './helper';
 const DAY = 7;
 
 class Bag {
-  contain: {bag: string, count: number}[] = [];
+  contain: {name: string, count: number}[] = [];
+  parents: Set<string> = new Set<string>();
   constructor(public name: string) {
   }
 }
@@ -14,36 +15,25 @@ run().then(([result1, result2]) => {
   console.log('Part 2:', result2);
 });
 
-function calculatePart1(input: Map<string, Bag>) {
-  const doneSet = new Set(['shiny gold'])
-  const bugList: string[] = ['shiny gold']
-  let result = 0;
-  while (bugList.length) {
-    const bagName = bugList.shift();
-    for (const bag of input.values()) {
-      for (const subBag of bag.contain) {
-        if (subBag.bag === bagName && !doneSet.has(bag.name)) {
-          bugList.push(bag.name);
-          result++;
-          doneSet.add(bag.name)
-        }
-      }
+function calculatePart1(input: Map<string, Bag>, bagName: string, setResult: Set<string> = new Set()): number {
+  const bag = input.get(bagName);
+  for (let subBag of bag.parents) {
+    if (!setResult.has(subBag)) {
+      setResult.add(subBag);
+      calculatePart1(input, subBag, setResult);
     }
   }
-  return result;
+  return setResult.size;
 }
 
-function getBagsCount(input: Map<string, Bag>, bagName: string): number {
+
+function calculatePart2(input, bagName: string) {
   let count = 0;
   const bag = input.get(bagName);
   for (let subBag of bag.contain) {
-    count += subBag.count + (subBag.count * getBagsCount(input, subBag.bag));
+    count += subBag.count + (subBag.count * calculatePart2(input, subBag.name));
   }
   return count;
-}
-
-function calculatePart2(input) {
-  return getBagsCount(input, 'shiny gold');
 }
 
 
@@ -54,12 +44,15 @@ function parse(input: string) {
   input.split('\n')
     .map(row => row.match(regexp))
     .forEach(parsed => {
-      const bag = new Bag(parsed[1])
+      const bag = bagsMap.get(parsed[1]) ?? new Bag(parsed[1])
       const childrenParse = parsed[2].split(', ');
       if (childrenParse[0] !== 'no other bags') {
         childrenParse.forEach(sub => {
           const subParsed = sub.match(subRegexp);
-          bag.contain.push({count: +subParsed[1], bag: subParsed[2]})
+          const subBag = bagsMap.get(subParsed[2]) ?? new Bag(subParsed[2])
+          subBag.parents.add(bag.name);
+          bag.contain.push({count: +subParsed[1], name: subParsed[2]});
+          bagsMap.set(subBag.name, subBag);
         })
       }
       bagsMap.set(bag.name, bag);
@@ -69,14 +62,14 @@ function parse(input: string) {
 
 export async function run() {
   const input: string = await getInput(DAY);
-  const result1 = calculatePart1(parse(input));
-  const result2 = calculatePart2(parse(input));
+  const result1 = calculatePart1(parse(input), 'shiny gold');
+  const result2 = calculatePart2(parse(input), 'shiny gold');
   return [result1, result2]
 }
 
 function tests() {
-  const part1Test = getTestFunction((input) => calculatePart1(parse(input)));
-  const part2Test = getTestFunction((input) => calculatePart2(parse(input)));
+  const part1Test = getTestFunction((input) => calculatePart1(parse(input), 'shiny gold'));
+  const part2Test = getTestFunction((input) => calculatePart2(parse(input), 'shiny gold'));
   part1Test(`light red bags contain 1 bright white bag, 2 muted yellow bags.
 dark orange bags contain 3 bright white bags, 4 muted yellow bags.
 bright white bags contain 1 shiny gold bag.
