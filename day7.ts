@@ -39,20 +39,20 @@ function calculatePart2(input, bagName: string) {
 
 function parse(input: string) {
   const regexp = /^(.+) bags contain (.*)\./;
-  const subRegexp = /^(\d+) (.*) bags?$/;
+  const childrenRegexp = /^(\d+) (.*) bags?$/;
   const bagsMap: Map<string, Bag> = new Map();
   input.split('\n')
     .map(row => row.match(regexp))
-    .forEach(parsed => {
-      const bag = bagsMap.get(parsed[1]) ?? new Bag(parsed[1])
-      const childrenParse = parsed[2].split(', ');
-      if (childrenParse[0] !== 'no other bags') {
-        childrenParse.forEach(sub => {
-          const subParsed = sub.match(subRegexp);
-          const subBag = bagsMap.get(subParsed[2]) ?? new Bag(subParsed[2])
-          subBag.parents.add(bag.name);
-          bag.contain.push({count: +subParsed[1], name: subParsed[2]});
-          bagsMap.set(subBag.name, subBag);
+    .forEach(([_, bagName, childrenString]) => {
+      const bag = bagsMap.get(bagName) ?? new Bag(bagName)
+      if (childrenString !== 'no other bags') {
+        childrenString.split(', ')
+          .map(v => v.match(childrenRegexp))
+          .forEach(([_, childrenCount, childrenName]) => {
+            const subBag = bagsMap.get(childrenName) ?? new Bag(childrenName)
+            subBag.parents.add(bag.name);
+            bag.contain.push({count: +childrenCount, name: childrenName});
+            bagsMap.set(subBag.name, subBag);
         })
       }
       bagsMap.set(bag.name, bag);
