@@ -3,47 +3,45 @@ import {getInput, getTestFunction} from './helper';
 const DAY = 10;
 
 tests();
-// run().then(([result1, result2]) => {
-//   console.log('Part 1:', result1);
-//   console.log('Part 2:', result2);
-// });
+run().then(([result1, result2]) => {
+  console.log('Part 1:', result1);
+  console.log('Part 2:', result2);
+});
 
-function calculatePart1(input: number[]) {
+function getDiff(input: number[]): number[] {
   input.sort((a, b) => a - b);
   input.unshift(0);
-  const diff = input.map((v, i) => {
+  return  input.map((v, i) => {
     return input[i + 1] ?
-        input[i + 1] - v :
-        3;
+      input[i + 1] - v :
+      3;
   });
+}
+
+function calculatePart1(input: number[]) {
+  const diff = getDiff(input);
   return diff.filter(v => v === 1).length * diff.filter(v => v === 3).length;
 }
 
 function calculatePart2(input: number[]): number{
-  input.sort((a, b) => a - b);
-  input.unshift(0);
-  const diff = input.map((v, i) => {
-    return input[i + 1] ?
-        input[i + 1] - v :
-        3;
-  });
-  let count = 0;
-  for (let i = 1; i < diff.length; i++) {
-    if (diff[i - 1] + diff[1]) {
-      count++
+  const diff = getDiff(input);
+  let result = 1;
+  let ones = 0;
+  for (let i = 0; i < diff.length; i++) {
+    if (diff[i] === 3) {
+      result *= calcOnes(ones) + 1;
+      ones = 0;
+    } else {
+      ones++
     }
   }
-  return count;
+  return result;
 }
 
-function calc(input: number[], start: number): number {
-  let count = 0;
-  for (let i = start; i < input.length - 1; i++) {
-    if (input[i + 1] - input[i - 1] < 3) {
-      const newInput = input.slice();
-      newInput.splice(i, 1);
-      count += calc(newInput, i) + 1
-    }
+function calcOnes(ones: number): number {
+  let count = (ones * (ones - 1)) / 2;
+  for (let i = ones - 3; i > 0; i--) {
+    count += 2 * calcOnes(i);
   }
   return count;
 }
