@@ -2,6 +2,10 @@ import {getInput, getTestFunction} from './helper';
 
 const DAY = 12;
 
+
+const DIR = {E: [1, 0], S: [0, 1], W: [-1, 0], N: [0, -1]};
+const TURN_DIR = {R: 1, L: -1};
+
 tests();
 run().then(([result1, result2]) => {
   console.log('Part 1:', result1);
@@ -17,9 +21,6 @@ run().then(([result1, result2]) => {
 //      |       S       |
 //       ----------------
 //             y=+1
-
-const DIR = {E: [1, 0], S: [0, 1], W: [-1, 0], N: [0, -1]};
-const TURN_DIR = {R: 1, L: -1};
 
 function calculatePart1(input: {dir: string, value: number}[]) {
   const POS = [0, 0];
@@ -44,18 +45,18 @@ function calculatePart1(input: {dir: string, value: number}[]) {
 function calculatePart2(input: {dir: string, value: number}[]) {
   const POS = [0, 0];
   const WP = [10, -1];
-  const TURNS = [[[1, 0], [0, 1]], [[0, -1], [1, 0]], [[-1, 0], [0, -1]], [[0, 1], [-1, 0]]];
 
   for (const step of input) {
     if (DIR[step.dir]) {
       WP[0] += DIR[step.dir][0] * step.value;
       WP[1] += DIR[step.dir][1] * step.value;
     } else if (TURN_DIR[step.dir]) {
-      const TURN = TURNS[(step.value / 90 * TURN_DIR[step.dir] + TURNS.length) % TURNS.length]
-      const newX = TURN[0][0] * WP[0] + TURN[0][1] * WP[1];
-      const newY = TURN[1][0] * WP[0] + TURN[1][1] * WP[1];
-      WP[0] = newX;
-      WP[1] = newY;
+      const t = (step.value / 90 * TURN_DIR[step.dir] + 4) % 4;
+      for (let i = 0; i < t; i++) {
+        const tempX = WP[0];
+        WP[0] = -WP[1];
+        WP[1] = tempX;
+      }
     } else if (step.dir === 'F') {
       POS[0] += WP[0] * step.value;
       POS[1] += WP[1] * step.value;

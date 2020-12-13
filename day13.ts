@@ -16,31 +16,18 @@ function calculatePart1({time, schedule}: {time: number, schedule: number[]}) {
   return result.id * result.next;
 }
 
-function check(timestamp: number, info: {dif: number, value: number}[]): [boolean, number] {
-  let mult = 1;
-  for (const bus of info) {
-    if ((timestamp + bus.dif) % bus.value === 0) {
-      mult *= bus.value
-    } else {
-      return [false, mult];
-    }
-  }
-  return [true, mult];
-}
-
 function calculatePart2({schedule}: {time: number, schedule: number[]}) {
   const info = Array.from(schedule.entries())
       .filter(([key, value]) => !isNaN(value))
-      .map(([key, value]) => ({dif: key, value}));
+      .map(([key, value]) => ({dif: key, value}))
+      .sort((a, b) => b.value - a.value);
 
-  let i = info[0].value;
-  while (true) {
-    const [finish, add] = check(i, info);
-    if (finish) {
-      return i;
-    }
-    i += add;
+  let time = 0, success = [];
+  while (success.length !== info.length) {
+    time += success.reduce((res, v) => v.value * res, 1);
+    success = info.filter(bus => (time + bus.dif) % bus.value === 0);
   }
+  return time
 }
 
 function parse(input: string): {time: number, schedule: number[]} {
