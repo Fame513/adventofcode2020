@@ -8,42 +8,68 @@ run().then(([result1, result2]) => {
   console.log('Part 2:', result2);
 });
 
-function getCords(value: string): [number, number, number] {
-  return value.split(':').map(v => +v) as [number, number, number];
+function getCords(value: string): number[] {
+  return value.split(':').map(v => +v);
 }
 
-function cordsToString(x: number, y: number, z: number): string {
-  return `${x}:${y}:${z}`;
+function cordsToString(...coords: number[]): string {
+  return coords.join(':');
 }
 
 function getNeighbors(point: string): Set<string> {
-  const neighbors: Set<string> = new Set;
+  const neighbors: Set<string> = new Set();
 
-  const [x, y, z] = getCords(point);
-
-  for (let dx = x - 1; dx <= x + 1; dx++) {
-    for (let dy = y - 1; dy <= y + 1; dy++) {
-      for (let dz = z - 1; dz <= z + 1; dz++) {
-        if (dx !== x && dy !== y && dz !== z) {
-          neighbors.add(cordsToString(x, y, z));
-        }
-      }
+  const coords = getCords(point);
+  const dim = coords.length;
+  for (let i = 0; i < Math.pow(3, dim); i++) {
+    const base3 = i.toString(3).padStart(dim, '0');
+    if (base3 === '1'.repeat(dim)) {
+      continue;
     }
+    const neighborPos = coords.map((v, i) => v + (+base3[i] - 1));
+    neighbors.add(cordsToString(...neighborPos));
   }
 
   return neighbors
 }
 
-function step(input: Set<string>) {
+function checkPoint(point: string, state: Set<string>): boolean {
+  const neighbors = getNeighbors(point);
+  const activeCount = Array.from(neighbors).filter(neighbor => state.has(neighbor)).length;
 
+  return state.has(point) ?
+    (activeCount >= 2 && activeCount <= 3) :
+    (activeCount === 3)
+}
+
+function step(state: Set<string>): Set<string> {
+  const allNeighbors: Set<string> = new Set();
+  state.forEach(v => getNeighbors(v).forEach(point => allNeighbors.add(point)));
+  const allPointsToCheck = new Set([...Array.from(state), ...Array.from(allNeighbors)]);
+  const newState: Set<string> = new Set();
+  allPointsToCheck.forEach(point => {
+    if (checkPoint(point, state)) {
+      newState.add(point);
+    }
+  })
+
+  return newState;
 }
 
 function calculatePart1(input: Set<string>) {
-
+  let state = new Set(Array.from(input).map(v => v + ':0'));
+  for(let i = 0; i < 6; i++) {
+    state = step(state);
+  }
+  return state.size;
 }
 
 function calculatePart2(input: Set<string>) {
-
+  let state = new Set(Array.from(input).map(v => v + ':0:0'));
+  for(let i = 0; i < 6; i++) {
+    state = step(state);
+  }
+  return state.size;
 }
 
 function parse(input: string): Set<string> {
@@ -51,7 +77,9 @@ function parse(input: string): Set<string> {
   const rows = input.split('\n');
   for (let y = 0; y < rows.length; y++) {
     for (let x = 0; x < rows[y].length; x++) {
-      result.add(cordsToString(x, y, 0));
+      if (rows[y][x] === '#') {
+        result.add(cordsToString(x, y));
+      }
     }
   }
   return result;
@@ -75,7 +103,7 @@ function tests() {
 
   part2Test(`.#.
 ..#
-###`, 1);
+###`, 848);
 
 
   console.log('---------------------');
