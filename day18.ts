@@ -21,7 +21,7 @@ function findClose(input: string, pos: number): number {
   return pos;
 }
 
-function exec(input: string): number {
+function exec(input: string, priority?: '+' | '*'): number {
   let result = 0;
   let pos = 0;
   let action = '+'
@@ -31,51 +31,21 @@ function exec(input: string): number {
       const close = findClose(input, pos);
       const sub = input.slice(pos + 1, close);
       if (action === '+') {
-        result += exec(sub);
+        result += exec(sub, priority);
       } else {
-        result *= exec(sub);
+        result *= exec(sub, priority);
       }
       pos = close + 1;
-    } else if (value === '+') {
-      action = '+';
-      pos++;
+    } else if (value === '+' || value === '*') {
+      if (priority && value !== priority) {
+        return value === '+' ? result + exec(input.slice(pos + 1), priority) : result * exec(input.slice(pos + 1), priority)
+      } else {
+        action = value;
+        pos++;
+      }
     } else if (value === '*') {
       action = '*';
       pos++;
-    } else {
-      if (action === '+') {
-        result += +value;
-      } else {
-        result *= +value;
-      }
-      pos++;
-    }
-  }
-
-  return result;
-}
-
-function exec2(input: string): number {
-  let result = 0;
-  let pos = 0;
-  let action = '+'
-  while (pos < input.length) {
-    const value = input[pos];
-    if (value === '(') {
-      const close = findClose(input, pos);
-      const sub = input.slice(pos + 1, close);
-      if (action === '+') {
-        result += exec2(sub);
-      } else {
-        result *= exec2(sub);
-      }
-      pos = close + 1;
-    } else if (value === '+') {
-      action = '+';
-      pos++
-    } else if (value === '*') {
-      action = '*';
-      return result * exec2(input.slice(pos + 1))
     } else {
       if (action === '+') {
         result += +value;
@@ -97,7 +67,7 @@ function calculatePart1(input: string[]) {
 
 function calculatePart2(input: string[]) {
   return input.map(v => v.replace(/ /g, ''))
-      .map(v => exec2(v))
+      .map(v => exec(v, '+'))
       .reduce((buf, v) => buf + v)
 }
 
