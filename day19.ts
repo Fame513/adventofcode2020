@@ -14,8 +14,7 @@ run().then(([result1, result2]) => {
   console.log('Part 2:', result2);
 });
 
-function mixStrings(s: string[][]): string[] {
-  const result: string[] = [];
+function mixStrings(s: string[][], result: string[]): void {
   s = s.filter(v => v && v.length);
   const count = s.reduce((buff, v) => buff * v.length, 1);
   for (let i = 0; i < count; i++) {
@@ -27,8 +26,6 @@ function mixStrings(s: string[][]): string[] {
     }
     result.push(str);
   }
-  return result;
-
 }
 
 function getList(rules: Map<number, Rule>, rule?: Rule): string[] {
@@ -42,25 +39,8 @@ function getList(rules: Map<number, Rule>, rule?: Rule): string[] {
     return rule.values;
   }
   const result = [];
-  // for (const r of rule.sub) {
-  //   result.push(...mixStrings(r.map(v => getList(rules, rules.get(v)))));
-  // }
-
   for (const r of rule.sub) {
-    // const arr = r.map(v => getList(rules, rules.get(v)));
-    const a1 = getList(rules, rules.get(r?.[0]));
-    const b1 = getList(rules, rules.get(r?.[1]));
-    result.push(...mixStrings([a1, b1]));
-
-    // if (b1.length) {
-    //   for (const a of a1) {
-    //     for (const b of b1) {
-    //       result.push(a+b)
-    //     }
-    //   }
-    // } else {
-    //   result.push(...a1)
-    // }
+    mixStrings(r.map(v => getList(rules, rules.get(v))), result);
   }
   return rule.values = result;
 }
@@ -73,7 +53,7 @@ function calculatePart1({rules, data}: {rules: Map<number, Rule>, data: string[]
 }
 
 function calculatePart2({rules, data}: {rules: Map<number, Rule>, data: string[]}) {
-
+  const maxLength = Math.max(...data.map(v => v.length))
 }
 
 function parse(input: string): {rules: Map<number, Rule>, data: string[]} {
@@ -105,7 +85,7 @@ export async function run() {
 function tests() {
   const part1Test = getTestFunction((input) => calculatePart1(parse(input)));
   const part2Test = getTestFunction((input) => calculatePart2(parse(input)));
-  part1Test(`0: 1 5
+  part1Test(`0: 4 1 5
 1: 2 3 | 3 2
 2: 4 4 | 5 5
 3: 4 5 | 5 4
