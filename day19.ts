@@ -47,13 +47,52 @@ function getList(rules: Map<number, Rule>, rule?: Rule): string[] {
 
 function calculatePart1({rules, data}: {rules: Map<number, Rule>, data: string[]}) {
   const list = getList(rules, rules.get(0))
-  console.log(list);
   const set = new Set(list);
   return data.filter(row => set.has(row)).length
 }
 
 function calculatePart2({rules, data}: {rules: Map<number, Rule>, data: string[]}) {
-  const maxLength = Math.max(...data.map(v => v.length))
+  const list42 = getList(rules, rules.get(42));
+  const list31 = getList(rules, rules.get(31));
+  const set42 = new Set(list42);
+  const set31 = new Set(list31);
+
+  let count = 0;
+  const size = list42[0].length;
+  next: for (const row of data) {
+    if (row.length % size !== 0) {
+      continue;
+    }
+    let second = false;
+    let firstCount = 0;
+    let secondCount = 0;
+    for (let i = 0; i <= row.length - size; i += size) {
+      const sub = row.slice(i, i + size);
+      if (!second) {
+        if (!set42.has(sub)) {
+          second = true;
+          if (!set31.has(sub)) {
+            continue next;
+          } else {
+            secondCount++
+          }
+        } else {
+          firstCount++
+        }
+      } else {
+        if (!set31.has(sub)) {
+          continue next;
+        } else {
+          secondCount++
+        }
+      }
+    }
+    if (secondCount > 0 && secondCount < firstCount) {
+      count++;
+    }
+  }
+  return count;
+
 }
 
 function parse(input: string): {rules: Map<number, Rule>, data: string[]} {
@@ -146,55 +185,55 @@ aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
 babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba`, 3);
   console.log('---------------------');
-//
-//
-//   part2Test(`42: 9 14 | 10 1
-// 9: 14 27 | 1 26
-// 10: 23 14 | 28 1
-// 1: "a"
-// 11: 42 31
-// 5: 1 14 | 15 1
-// 19: 14 1 | 14 14
-// 12: 24 14 | 19 1
-// 16: 15 1 | 14 14
-// 31: 14 17 | 1 13
-// 6: 14 14 | 1 14
-// 2: 1 24 | 14 4
-// 0: 8 11
-// 13: 14 3 | 1 12
-// 15: 1 | 14
-// 17: 14 2 | 1 7
-// 23: 25 1 | 22 14
-// 28: 16 1
-// 4: 1 1
-// 20: 14 14 | 1 15
-// 3: 5 14 | 16 1
-// 27: 1 6 | 14 18
-// 14: "b"
-// 21: 14 1 | 1 14
-// 25: 1 1 | 1 14
-// 22: 14 14
-// 8: 42
-// 26: 14 22 | 1 20
-// 18: 15 15
-// 7: 14 5 | 1 21
-// 24: 14 1
-//
-// abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
-// bbabbbbaabaabba
-// babbbbaabbbbbabbbbbbaabaaabaaa
-// aaabbbbbbaaaabaababaabababbabaaabbababababaaa
-// bbbbbbbaaaabbbbaaabbabaaa
-// bbbababbbbaaaaaaaabbababaaababaabab
-// ababaaaaaabaaab
-// ababaaaaabbbaba
-// baabbaaaabbaaaababbaababb
-// abbbbabbbbaaaababbbbbbaaaababb
-// aaaaabbaabaaaaababaa
-// aaaabbaaaabbaaa
-// aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
-// babaaabbbaaabaababbaabababaaab
-// aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba`, 12);
+
+
+  part2Test(`42: 9 14 | 10 1
+9: 14 27 | 1 26
+10: 23 14 | 28 1
+1: "a"
+11: 42 31
+5: 1 14 | 15 1
+19: 14 1 | 14 14
+12: 24 14 | 19 1
+16: 15 1 | 14 14
+31: 14 17 | 1 13
+6: 14 14 | 1 14
+2: 1 24 | 14 4
+0: 8 11
+13: 14 3 | 1 12
+15: 1 | 14
+17: 14 2 | 1 7
+23: 25 1 | 22 14
+28: 16 1
+4: 1 1
+20: 14 14 | 1 15
+3: 5 14 | 16 1
+27: 1 6 | 14 18
+14: "b"
+21: 14 1 | 1 14
+25: 1 1 | 1 14
+22: 14 14
+8: 42
+26: 14 22 | 1 20
+18: 15 15
+7: 14 5 | 1 21
+24: 14 1
+
+abbbbbabbbaaaababbaabbbbabababbbabbbbbbabaaaa
+bbabbbbaabaabba
+babbbbaabbbbbabbbbbbaabaaabaaa
+aaabbbbbbaaaabaababaabababbabaaabbababababaaa
+bbbbbbbaaaabbbbaaabbabaaa
+bbbababbbbaaaaaaaabbababaaababaabab
+ababaaaaaabaaab
+ababaaaaabbbaba
+baabbaaaabbaaaababbaababb
+abbbbabbbbaaaababbbbbbaaaababb
+aaaaabbaabaaaaababaa
+aaaabbaaaabbaaa
+aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
+babaaabbbaaabaababbaabababaaab
+aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba`, 12);
 
 
   console.log('---------------------');
